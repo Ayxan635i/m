@@ -21,9 +21,9 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1   # ← change to your bucket's region
+          aws-region: eu-north-1   # bucket's region
 
-      # 3. Sync your files to S3
+      # 3. Sync files to S3
       - name: Deploy to S3
         run: |
           aws s3 sync . s3://amznbuckt134134 \
