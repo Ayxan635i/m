@@ -22,7 +22,7 @@ jobs:
         run: |
        
           npm install -g standard
-          standard *.html *.css *.js || true  
+          standard *.html *.css *.js  
 
   deploy:
     name: Deploy
