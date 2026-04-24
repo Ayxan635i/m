@@ -30,7 +30,7 @@ jobs:
         run: |
           npm install -g htmlhint
           htmlhint "**/*.html" --config .htmlhintrc 2>/dev/null \
-            || htmlhint "**/*.html"   # falls back to default rules if no config
+            || htmlhint "**/*.html"   
 
   
   deploy:
