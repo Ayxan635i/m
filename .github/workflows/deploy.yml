@@ -5,12 +5,10 @@ on:
       - main
   pull_request:
     branches:
-      - main        # CI also runs on PRs, but deploy is blocked until merge
+      - main       
 
 jobs:
-  # ─────────────────────────────────────────
-  # CI JOB — validate before we deploy anything
-  # ─────────────────────────────────────────
+
   ci:
     name: CI – Lint & Validate
     runs-on: ubuntu-latest
@@ -18,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Validates HTML structure/syntax across every .html file
+    
       - name: Validate HTML
         uses: Cyb3r-Jak3/html5validator-action@v7.2.0
         with:
@@ -27,20 +25,18 @@ jobs:
 
       
 
-      # Flags common HTML/CSS mistakes (missing alt text, deprecated tags, etc.)
+      
       - name: Lint with HTMLHint
         run: |
           npm install -g htmlhint
           htmlhint "**/*.html" --config .htmlhintrc 2>/dev/null \
             || htmlhint "**/*.html"   # falls back to default rules if no config
 
-  # ─────────────────────────────────────────
-  # CD JOB — only runs after CI passes
-  # ─────────────────────────────────────────
+  
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    needs: ci                          # ← blocks deploy if CI job fails
+    needs: ci                         
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Checkout code
@@ -55,15 +51,9 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 sync . s3://my-website-yourname-2024 \
+          aws s3 sync . s3://amznbuckt134134\
             --exclude ".git/*" \
             --exclude ".github/*" \
             --delete
 
-      # Busts CloudFront cache so visitors see your changes immediately
-      - name: Invalidate CloudFront cache
-        if: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID != '' }}
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+      
