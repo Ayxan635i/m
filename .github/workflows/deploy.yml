@@ -2,50 +2,51 @@ name: Deploy to AWS S3
 
 on:
   push:
-    branches: [ main ]           # Triggers on every push to main branch
+    branches:
+      - main
 
 jobs:
   deploy:
-    name: Build, Test, and Deploy
+    name: Deploy
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out the repository code
+      # 1. Check out your repository code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Set up Node.js (adjust version as needed)
+      # --- CI STEPS START ---
+      # 2. Set up Node.js (Adjust version if needed)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'     # or '18', '22', etc.
-          cache: 'npm'           # speeds up npm install
+          node-version: '20'
+          cache: 'npm'
 
       # 3. Install dependencies
+      # 'npm ci' is faster and more reliable in CI environments than 'npm install'
       - name: Install dependencies
-        run: npm ci              # uses package-lock.json for deterministic installs
+        run: npm ci
 
-      # 4. Run tests (if you have any)
-      - name: Run tests
-        run: npm test            # assumes test script is defined in package.json
+      # 4. Run Tests
+      - name: Run Tests
+        run: npm test
 
-      # 5. Build the project (produces a 'build' or 'dist' folder)
+      # 5. Build the project
       - name: Build project
-        run: npm run build       # adjust to your build script, e.g. 'npm run generate'
+        run: npm run build
+      # --- CI STEPS END ---
 
-      # 6. Configure AWS credentials using GitHub Secrets
+      # 6. Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1      # bucket's region
+          aws-region: eu-north-1
 
-      # 7. Sync the built files to S3 (only the output folder)
+      # 7. Sync your files to S3
+      # Note: I changed '.' to './dist' assuming your build output goes there
       - name: Deploy to S3
         run: |
-          aws s3 sync ./build/ s3://amznbuckt134134 \
-            --exclude ".git/*" \
-            --exclude ".github/*" \
-            --delete
-        # If your build output folder is named 'dist', replace './build/' with './dist/'
+          aws s3 sync ./dist s3://amznbuckt134134 --delete
