@@ -3,48 +3,48 @@ name: CI/CD Deploy to AWS S3
 on:
   push:
     branches:
-      - main   # Triggers on every push to main branch
+      - main   
   pull_request:
     branches:
-      - main   # Run CI on PRs to main
+      - main  
 
 jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
     steps:
-      # 1. Check out your repository code
+     
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Run linting (add your linter here, e.g., eslint for JS)
+      
       - name: Lint code
         run: |
-          # Example for HTML/CSS/JS - install and run standard linter
+       
           npm install -g standard
-          standard *.html *.css *.js || true  # '|| true' to not fail on warnings initially
+          standard *.html *.css *.js || true  
 
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    needs: ci  # Only deploy if CI passes
-    if: github.ref == 'refs/heads/main'  # Only on main branch pushes, not PRs
+    needs: ci  
+    if: github.ref == 'refs/heads/main'  
 
     steps:
-      # 1. Check out your repository code
+  
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Configure AWS credentials using your GitHub Secrets
+  
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1   # bucket's region
+          aws-region: eu-north-1   
 
-      # 3. Sync your files to S3
-      - name: Deploy to S3
+     
+      - name: Deploy 
         run: |
           aws s3 sync . s3://amznbuckt134134 \
             --exclude ".git/*" \
