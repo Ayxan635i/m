@@ -1,52 +1,43 @@
-name: Deploy to AWS S3
-
+name: CI & Deploy Node.js App to S3
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+permissions:
+  id-token: write    # Allow OIDC token request【2†L478-L486】
+  contents: read
 
 jobs:
-  deploy:
-    name: Deploy
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out your repository code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- CI STEPS START ---
-      # 2. Set up Node.js (Adjust version if needed)
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '24'
+          cache: 'npm'           # Automatic npm caching【32†L540-L549】
 
-      # 3. Install dependencies
-      # 'npm ci' is faster and more reliable in CI environments than 'npm install'
       - name: Install dependencies
         run: npm ci
 
-      # 4. Run Tests
-      - name: Run Tests
+      - name: Lint code
+        run: npm run lint      # e.g. ESLint
+
+      - name: Run unit tests
         run: npm test
 
-      # 5. Build the project
-      - name: Build project
-        run: npm run build
-      # --- CI STEPS END ---
+      - name: Build website
+        run: npm run build     # e.g. webpack, react-scripts build
 
-      # 6. Configure AWS credentials
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::123456789012:role/my-s3-deploy-role
           aws-region: eu-north-1
 
-      # 7. Sync your files to S3
-      # Note: I changed '.' to './dist' assuming your build output goes there
       - name: Deploy to S3
         run: |
-          aws s3 sync ./dist s3://amznbuckt134134 --delete
+          aws s3 sync ./build s3://amznbuckt134134 --delete --acl public-read
